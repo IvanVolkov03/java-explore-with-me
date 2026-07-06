@@ -1,12 +1,12 @@
 package ru.practicum.stats.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.EndpointHit;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.stats.model.Hit;
 import ru.practicum.stats.repository.StatsRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +18,7 @@ public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;
 
     @Override
+    @Transactional
     public void saveHit(EndpointHit endpointHit) {
         Hit hit = Hit.builder()
                 .app(endpointHit.getApp())
@@ -29,6 +30,7 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end,
                                     List<String> uris, Boolean unique) {
         List<Object[]> results;
