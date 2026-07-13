@@ -1,8 +1,9 @@
 package ru.practicum.main.exception;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +12,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -26,7 +28,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflictException(final ConflictException e) {
         return new ApiError(
@@ -38,36 +40,26 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleRuntimeException(final RuntimeException e) {
-        String message = e.getMessage();
-        if (message != null && (message.contains("not found") || message.contains("Not found"))) {
-            return new ApiError(
-                    List.of(message),
-                    message,
-                    "The required object was not found.",
-                    HttpStatus.NOT_FOUND.name(),
-                    LocalDateTime.now()
-            );
-        }
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleIllegalArgumentException(final IllegalArgumentException e) {
         return new ApiError(
-                List.of(message),
-                message,
-                "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.name(),
+                List.of(e.getMessage()),
+                e.getMessage(),
+                "Incorrectly made request.",
+                HttpStatus.BAD_REQUEST.name(),
                 LocalDateTime.now()
         );
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleMissingServletRequestParameterException(final MissingServletRequestParameterException e) {
         return new ApiError(
-                List.of(e.getMessage()),
-                "Integrity constraint has been violated.",
-                "Integrity constraint has been violated.",
-                HttpStatus.CONFLICT.name(),
+                List.of("Missing required parameter: " + e.getParameterName()),
+                "Missing required parameter: " + e.getParameterName(),
+                "Incorrectly made request.",
+                HttpStatus.BAD_REQUEST.name(),
                 LocalDateTime.now()
         );
     }
@@ -105,9 +97,10 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(final Exception e) {
+        log.error("Unhandled exception", e);
         return new ApiError(
                 List.of(e.getMessage()),
                 e.getMessage(),
