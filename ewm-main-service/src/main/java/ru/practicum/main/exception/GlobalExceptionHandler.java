@@ -1,6 +1,7 @@
 package ru.practicum.main.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -48,6 +49,18 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 "Incorrectly made request.",
                 HttpStatus.BAD_REQUEST.name(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+        return new ApiError(
+                List.of(e.getMessage()),
+                "Integrity constraint has been violated.",
+                "Integrity constraint has been violated.",
+                HttpStatus.CONFLICT.name(),
                 LocalDateTime.now()
         );
     }

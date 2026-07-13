@@ -44,7 +44,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Category with id=" + newEventDto.getCategory() + " was not found"));
 
         if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
         }
 
         Event event = new Event();
@@ -83,7 +83,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventRequest.getEventDate() != null &&
                 updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
         }
 
         updateEventUser(event, updateEventRequest);

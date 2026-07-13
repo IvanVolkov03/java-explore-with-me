@@ -1,5 +1,6 @@
 package ru.practicum.client;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -13,8 +14,9 @@ public class StatsClientImpl implements StatsClient {
 
     private final WebClient webClient;
 
-    public StatsClientImpl(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:9090").build();
+    public StatsClientImpl(WebClient.Builder webClientBuilder,
+                           @Value("${ewm.stats-server.url:http://localhost:9090}") String statsServerUrl) {
+        this.webClient = webClientBuilder.baseUrl(statsServerUrl).build();
     }
 
     @Override
