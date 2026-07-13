@@ -1,21 +1,17 @@
 package ru.practicum.client;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.practicum.dto.EndpointHit;
 import ru.practicum.dto.ViewStats;
 import org.springframework.core.ParameterizedTypeReference;
 import java.util.List;
 
-@Component
 public class StatsClientImpl implements StatsClient {
 
     private final WebClient webClient;
 
-    public StatsClientImpl(WebClient.Builder webClientBuilder,
-                           @Value("${ewm.stats-server.url:http://localhost:9090}") String statsServerUrl) {
+    public StatsClientImpl(WebClient.Builder webClientBuilder, String statsServerUrl) {
         this.webClient = webClientBuilder.baseUrl(statsServerUrl).build();
     }
 
