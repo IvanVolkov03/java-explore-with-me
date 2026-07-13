@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.main.category.dto.CategoryDto;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -21,5 +22,5 @@ public class EventShortDto {
     private UserShortDto initiator;
     private Long views;
     private Integer confirmedRequests;
-    private Integer participantLimit; // Добавлено, так как тесты иногда проверяют его наличие
+    private Integer participantLimit;
 }

@@ -96,6 +96,10 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
+        if (updateEventRequest.getEventDate() != null && updateEventRequest.getEventDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+        }
+
         updateEventAdmin(event, updateEventRequest);
         return toFullDto(eventRepository.save(event), 0L, 0);
     }
@@ -367,7 +371,7 @@ public class EventServiceImpl implements EventService {
             hit.setTimestamp(LocalDateTime.now());
             statsClient.saveHit(hit);
         } catch (Exception e) {
-            log.error("Failed to save hit for uri {}: {}", uri, e.getMessage(), e);
+            log.warn("Failed to save hit: {}", e.getMessage());
         }
     }
 
