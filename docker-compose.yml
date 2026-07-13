@@ -20,3 +20,24 @@ services:
       - POSTGRES_PASSWORD=12345
     ports:
       - "5432:5432"
+
+  main-service:
+    build: ewm-main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - main-db
+      - stats-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5433/ewm_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=12345
+
+  main-db:
+    image: postgres:16.1
+    environment:
+      - POSTGRES_DB=ewm_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+    ports:
+      - "5433:5432"

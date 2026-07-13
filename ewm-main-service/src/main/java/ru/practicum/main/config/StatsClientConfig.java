@@ -1,0 +1,21 @@
+package ru.practicum.main.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
+import ru.practicum.client.StatsClient;
+import ru.practicum.client.StatsClientImpl;
+
+@Configuration
+public class StatsClientConfig {
+
+    @Bean
+    public WebClient.Builder webClientBuilder() {
+        return WebClient.builder();
+    }
+
+    @Bean
+    public StatsClient statsClient(WebClient.Builder webClientBuilder) {
+        return new StatsClientImpl(webClientBuilder);
+    }
+}
