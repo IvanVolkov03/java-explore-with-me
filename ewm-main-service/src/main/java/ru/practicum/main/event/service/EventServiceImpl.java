@@ -367,7 +367,7 @@ public class EventServiceImpl implements EventService {
             hit.setTimestamp(LocalDateTime.now());
             statsClient.saveHit(hit);
         } catch (Exception e) {
-            log.warn("Failed to save hit: {}", e.getMessage());
+            log.error("Failed to save hit for uri {}: {}", uri, e.getMessage(), e);
         }
     }
 

@@ -1,10 +1,11 @@
 package ru.practicum.client;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.practicum.dto.EndpointHit;
 import ru.practicum.dto.ViewStats;
-import org.springframework.core.ParameterizedTypeReference;
+
 import java.util.List;
 
 public class StatsClientImpl implements StatsClient {
