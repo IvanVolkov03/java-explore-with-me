@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.event.repository.EventRepository;
+import ru.practicum.main.exception.ConflictException;
+import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.main.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
@@ -30,26 +32,26 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
         User requester = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (event.getInitiator().getId().equals(userId)) {
-            throw new RuntimeException("Инициатор события не может добавить запрос на участие в своём событии");
+            throw new ConflictException("Инициатор события не может добавить запрос на участие в своём событии");
         }
 
         if (!"PUBLISHED".equals(event.getState())) {
-            throw new RuntimeException("Нельзя участвовать в неопубликованном событии");
+            throw new ConflictException("Нельзя участвовать в неопубликованном событии");
         }
 
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
-            throw new RuntimeException("Duplicate request");
+            throw new ConflictException("Duplicate request");
         }
 
         if (event.getParticipantLimit() > 0) {
             Integer confirmedCount = eventRepository.countConfirmedRequests(eventId);
             if (confirmedCount >= event.getParticipantLimit()) {
-                throw new RuntimeException("Participant limit reached");
+                throw new ConflictException("Participant limit reached");
             }
         }
 
@@ -81,10 +83,10 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         ParticipationRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
 
         if (!request.getRequester().getId().equals(userId)) {
-            throw new RuntimeException("Not request owner");
+            throw new ConflictException("Not request owner");
         }
 
         if ("CONFIRMED".equals(request.getStatus())) {
@@ -100,10 +102,10 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new RuntimeException("Not event initiator");
+            throw new ConflictException("Not event initiator");
         }
 
         return requestRepository.findByEventId(eventId)
@@ -117,10 +119,10 @@ public class RequestServiceImpl implements RequestService {
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
                                                               EventRequestStatusUpdateRequest updateRequest) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new RuntimeException("Not event initiator");
+            throw new ConflictException("Not event initiator");
         }
 
         List<ParticipationRequest> requests = requestRepository.findAllById(updateRequest.getRequestIds());
@@ -131,7 +133,7 @@ public class RequestServiceImpl implements RequestService {
 
         for (ParticipationRequest request : requests) {
             if (!"PENDING".equals(request.getStatus())) {
-                throw new RuntimeException("Request must have status PENDING");
+                throw new ConflictException("Request must have status PENDING");
             }
 
             if ("CONFIRMED".equals(updateRequest.getStatus())) {

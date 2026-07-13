@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.client.StatsClient;
 import ru.practicum.dto.EndpointHit;
 import ru.practicum.dto.ViewStats;
-import ru.practicum.main.category.dto.CategoryDto;
 import ru.practicum.main.category.model.Category;
 import ru.practicum.main.category.repository.CategoryRepository;
 import ru.practicum.main.event.dto.*;
@@ -20,6 +19,7 @@ import ru.practicum.main.exception.ConflictException;
 import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.user.model.User;
 import ru.practicum.main.user.repository.UserRepository;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -45,7 +45,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Category with id=" + newEventDto.getCategory() + " was not found"));
 
         if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
         }
 
         Event event = new Event();
@@ -84,7 +84,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventRequest.getEventDate() != null &&
                 updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
         }
 
         updateEventUser(event, updateEventRequest);
@@ -134,7 +134,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (!"PUBLISHED".equals(event.getState())) {
-            throw new ConflictException("Event must be published");
+            throw new NotFoundException("Event with id=" + eventId + " was not found");
         }
 
         saveHit(ip, uri);
@@ -354,12 +354,16 @@ public class EventServiceImpl implements EventService {
     }
 
     private void saveHit(String ip, String uri) {
-        EndpointHit hit = new EndpointHit();
-        hit.setApp("ewm-main-service");
-        hit.setUri(uri);
-        hit.setIp(ip);
-        hit.setTimestamp(LocalDateTime.now());
-        statsClient.saveHit(hit);
+        try {
+            EndpointHit hit = new EndpointHit();
+            hit.setApp("ewm-main-service");
+            hit.setUri(uri);
+            hit.setIp(ip);
+            hit.setTimestamp(LocalDateTime.now());
+            statsClient.saveHit(hit);
+        } catch (Exception e) {
+            log.warn("Failed to save hit: {}", e.getMessage());
+        }
     }
 
     private Long getViews(Long eventId) {
@@ -404,7 +408,7 @@ public class EventServiceImpl implements EventService {
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to get views statistics: {}", e.getMessage());
+            log.warn("Failed to get views map: {}", e.getMessage());
         }
         return viewsMap;
     }
@@ -414,7 +418,7 @@ public class EventServiceImpl implements EventService {
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
 
-        CategoryDto categoryDto = new CategoryDto();
+        ru.practicum.main.category.dto.CategoryDto categoryDto = new ru.practicum.main.category.dto.CategoryDto();
         categoryDto.setId(event.getCategory().getId());
         categoryDto.setName(event.getCategory().getName());
         dto.setCategory(categoryDto);
@@ -449,7 +453,7 @@ public class EventServiceImpl implements EventService {
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
 
-        CategoryDto categoryDto = new CategoryDto();
+        ru.practicum.main.category.dto.CategoryDto categoryDto = new ru.practicum.main.category.dto.CategoryDto();
         categoryDto.setId(event.getCategory().getId());
         categoryDto.setName(event.getCategory().getName());
         dto.setCategory(categoryDto);

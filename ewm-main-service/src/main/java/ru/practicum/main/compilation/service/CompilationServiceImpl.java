@@ -117,6 +117,7 @@ public class CompilationServiceImpl implements CompilationService {
                             shortDto.setTitle(e.getTitle());
                             shortDto.setPaid(e.getPaid());
                             shortDto.setEventDate(e.getEventDate());
+                            shortDto.setParticipantLimit(e.getParticipantLimit());
 
                             ru.practicum.main.category.dto.CategoryDto catDto = new ru.practicum.main.category.dto.CategoryDto();
                             catDto.setId(e.getCategory().getId());

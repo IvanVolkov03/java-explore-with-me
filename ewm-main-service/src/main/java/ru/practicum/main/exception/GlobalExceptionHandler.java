@@ -97,6 +97,28 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleRuntimeException(final RuntimeException e) {
+        String msg = e.getMessage();
+        if (msg != null && msg.toLowerCase().contains("not found")) {
+            return new ApiError(
+                    List.of(msg),
+                    msg,
+                    "The required object was not found.",
+                    HttpStatus.NOT_FOUND.name(),
+                    LocalDateTime.now()
+            );
+        }
+        return new ApiError(
+                List.of(msg),
+                msg,
+                "For the requested operation the conditions are not met.",
+                HttpStatus.CONFLICT.name(),
+                LocalDateTime.now()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(final Exception e) {
