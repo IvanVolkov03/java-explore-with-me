@@ -29,7 +29,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         Compilation compilation = new Compilation();
-        compilation.setPinned(newCompilationDto.getPinned());
+        compilation.setPinned(newCompilationDto.getPinned() != null ? newCompilationDto.getPinned() : false);
         compilation.setTitle(newCompilationDto.getTitle());
 
         Set<Event> events = new HashSet<>();

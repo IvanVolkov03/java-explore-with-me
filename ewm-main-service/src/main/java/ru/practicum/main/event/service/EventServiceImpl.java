@@ -45,7 +45,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Category with id=" + newEventDto.getCategory() + " was not found"));
 
         if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
         }
 
         Event event = new Event();
@@ -84,7 +84,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventRequest.getEventDate() != null &&
                 updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new IllegalArgumentException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
+            throw new ConflictException("Field: eventDate. Error: должно содержать дату, которая еще не наступила");
         }
 
         updateEventUser(event, updateEventRequest);
@@ -156,7 +156,9 @@ public class EventServiceImpl implements EventService {
             throw new IllegalArgumentException("rangeEnd must be after rangeStart");
         }
 
-        List<Event> events = eventRepository.findAllPublished(PageRequest.of(from / size, size, Sort.unsorted()));
+        List<Event> events = eventRepository.findAll().stream()
+                .filter(e -> "PUBLISHED".equals(e.getState()))
+                .collect(Collectors.toList());
 
         if (text != null && !text.isEmpty()) {
             events = events.stream()
@@ -187,25 +189,29 @@ public class EventServiceImpl implements EventService {
                     .collect(Collectors.toList());
         }
 
+        if (onlyAvailable != null && onlyAvailable) {
+            events = events.stream()
+                    .filter(e -> e.getParticipantLimit() == null || e.getParticipantLimit() == 0 ||
+                            e.getConfirmedRequests() < e.getParticipantLimit())
+                    .collect(Collectors.toList());
+        }
+
         saveHit(ip, uri);
 
-        List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
+        int start = from;
+        int end = Math.min(from + size, events.size());
+        List<Event> pagedEvents = events.subList(start, end);
+
+        List<Long> eventIds = pagedEvents.stream().map(Event::getId).collect(Collectors.toList());
         Map<Long, Long> viewsMap = getViewsMap(eventIds);
 
-        List<EventShortDto> result = events.stream()
+        List<EventShortDto> result = pagedEvents.stream()
                 .map(e -> {
                     Long views = viewsMap.getOrDefault(e.getId(), 0L);
                     Integer confirmedRequests = eventRepository.countConfirmedRequests(e.getId());
                     return toShortDto(e, views, confirmedRequests);
                 })
                 .collect(Collectors.toList());
-
-        if (onlyAvailable != null && onlyAvailable) {
-            result = result.stream()
-                    .filter(e -> e.getParticipantLimit() == null || e.getParticipantLimit() == 0 ||
-                            e.getConfirmedRequests() < e.getParticipantLimit())
-                    .collect(Collectors.toList());
-        }
 
         if ("VIEWS".equals(sort)) {
             result.sort((a, b) -> Long.compare(b.getViews(), a.getViews()));
