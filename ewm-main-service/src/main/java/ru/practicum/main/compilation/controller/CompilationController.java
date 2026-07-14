@@ -12,7 +12,6 @@ import ru.practicum.main.compilation.service.CompilationService;
 import java.util.List;
 
 @RestController
-@RequestMapping
 @RequiredArgsConstructor
 public class CompilationController {
 
