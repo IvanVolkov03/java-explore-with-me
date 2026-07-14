@@ -29,18 +29,22 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         Compilation compilation = new Compilation();
-        compilation.setPinned(newCompilationDto.getPinned() != null ? newCompilationDto.getPinned() : false);
+
+        // Если pinned null, ставим false
+        Boolean pinnedValue = newCompilationDto.getPinned();
+        compilation.setPinned(pinnedValue != null ? pinnedValue : false);
+
         compilation.setTitle(newCompilationDto.getTitle());
 
+        // Если events null или пустой - создаем пустое множество
+        Set<Event> events = new HashSet<>();
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
-            Set<Event> events = eventRepository.findAllById(newCompilationDto.getEvents())
+            events = eventRepository.findAllById(newCompilationDto.getEvents())
                     .stream()
                     .filter(e -> "PUBLISHED".equals(e.getState()))
                     .collect(Collectors.toSet());
-            compilation.setEvents(events);
-        } else {
-            compilation.setEvents(new HashSet<>());
         }
+        compilation.setEvents(events);
 
         return toDto(compilationRepository.save(compilation));
     }
