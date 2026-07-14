@@ -1,6 +1,7 @@
-DELETE FROM requests;
+-- Очистка таблиц перед тестами (только для тестового профиля)
 DELETE FROM compilation_events;
 DELETE FROM compilations;
+DELETE FROM requests;
 DELETE FROM events;
 DELETE FROM categories;
 DELETE FROM users;
