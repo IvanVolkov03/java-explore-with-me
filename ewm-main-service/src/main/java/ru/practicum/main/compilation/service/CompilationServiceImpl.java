@@ -29,7 +29,13 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         Compilation compilation = new Compilation();
-        compilation.setPinned(newCompilationDto.getPinned() != null ? newCompilationDto.getPinned() : false);
+
+        boolean isPinned = false;
+        if (newCompilationDto.getPinned() != null) {
+            isPinned = Boolean.parseBoolean(newCompilationDto.getPinned());
+        }
+        compilation.setPinned(isPinned);
+
         compilation.setTitle(newCompilationDto.getTitle());
 
         Set<Event> events = new HashSet<>();
@@ -56,7 +62,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .orElseThrow(() -> new RuntimeException("Compilation not found"));
 
         if (updateCompilationRequest.getPinned() != null) {
-            compilation.setPinned(updateCompilationRequest.getPinned());
+            compilation.setPinned(Boolean.parseBoolean(updateCompilationRequest.getPinned()));
         }
         if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());

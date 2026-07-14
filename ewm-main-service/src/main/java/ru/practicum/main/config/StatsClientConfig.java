@@ -12,7 +12,7 @@ import ru.practicum.client.StatsClientImpl;
 @Configuration
 public class StatsClientConfig {
 
-    @Value("${ewm.stats.server.url:http://localhost:9090}")
+    @Value("${ewm.stats-server.url:http://localhost:9090}")
     private String statsServerUrl;
 
     @Bean
