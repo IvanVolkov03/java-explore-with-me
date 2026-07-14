@@ -33,11 +33,11 @@ public class CompilationServiceImpl implements CompilationService {
         compilation.setTitle(newCompilationDto.getTitle());
 
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
-            Set<Event> publishedEvents = eventRepository.findAllById(newCompilationDto.getEvents())
+            Set<Event> events = eventRepository.findAllById(newCompilationDto.getEvents())
                     .stream()
                     .filter(e -> "PUBLISHED".equals(e.getState()))
                     .collect(Collectors.toSet());
-            compilation.setEvents(publishedEvents);
+            compilation.setEvents(events);
         } else {
             compilation.setEvents(new HashSet<>());
         }
@@ -63,11 +63,15 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
         if (updateCompilationRequest.getEvents() != null) {
-            Set<Event> publishedEvents = eventRepository.findAllById(updateCompilationRequest.getEvents())
-                    .stream()
-                    .filter(e -> "PUBLISHED".equals(e.getState()))
-                    .collect(Collectors.toSet());
-            compilation.setEvents(publishedEvents);
+            if (!updateCompilationRequest.getEvents().isEmpty()) {
+                Set<Event> events = eventRepository.findAllById(updateCompilationRequest.getEvents())
+                        .stream()
+                        .filter(e -> "PUBLISHED".equals(e.getState()))
+                        .collect(Collectors.toSet());
+                compilation.setEvents(events);
+            } else {
+                compilation.setEvents(new HashSet<>());
+            }
         }
 
         return toDto(compilationRepository.save(compilation));
@@ -109,34 +113,35 @@ public class CompilationServiceImpl implements CompilationService {
         dto.setPinned(compilation.getPinned());
         dto.setTitle(compilation.getTitle());
 
-        Set<EventShortDto> eventDtos = compilation.getEvents() != null ?
-                compilation.getEvents().stream()
-                        .map(e -> {
-                            EventShortDto shortDto = new EventShortDto();
-                            shortDto.setId(e.getId());
-                            shortDto.setAnnotation(e.getAnnotation());
-                            shortDto.setTitle(e.getTitle());
-                            shortDto.setPaid(e.getPaid());
-                            shortDto.setEventDate(e.getEventDate());
-                            shortDto.setParticipantLimit(e.getParticipantLimit());
+        Set<EventShortDto> eventDtos = new HashSet<>();
+        if (compilation.getEvents() != null) {
+            eventDtos = compilation.getEvents().stream()
+                    .map(e -> {
+                        EventShortDto shortDto = new EventShortDto();
+                        shortDto.setId(e.getId());
+                        shortDto.setAnnotation(e.getAnnotation());
+                        shortDto.setTitle(e.getTitle());
+                        shortDto.setPaid(e.getPaid());
+                        shortDto.setEventDate(e.getEventDate());
+                        shortDto.setParticipantLimit(e.getParticipantLimit());
 
-                            ru.practicum.main.category.dto.CategoryDto catDto = new ru.practicum.main.category.dto.CategoryDto();
-                            catDto.setId(e.getCategory().getId());
-                            catDto.setName(e.getCategory().getName());
-                            shortDto.setCategory(catDto);
+                        ru.practicum.main.category.dto.CategoryDto catDto = new ru.practicum.main.category.dto.CategoryDto();
+                        catDto.setId(e.getCategory().getId());
+                        catDto.setName(e.getCategory().getName());
+                        shortDto.setCategory(catDto);
 
-                            UserShortDto userDto = new UserShortDto();
-                            userDto.setId(e.getInitiator().getId());
-                            userDto.setName(e.getInitiator().getName());
-                            shortDto.setInitiator(userDto);
+                        UserShortDto userDto = new UserShortDto();
+                        userDto.setId(e.getInitiator().getId());
+                        userDto.setName(e.getInitiator().getName());
+                        shortDto.setInitiator(userDto);
 
-                            shortDto.setConfirmedRequests(e.getConfirmedRequests());
-                            shortDto.setViews((long) e.getViews());
+                        shortDto.setConfirmedRequests(e.getConfirmedRequests());
+                        shortDto.setViews((long) e.getViews());
 
-                            return shortDto;
-                        })
-                        .collect(Collectors.toSet()) : new HashSet<>();
-
+                        return shortDto;
+                    })
+                    .collect(Collectors.toSet());
+        }
         dto.setEvents(eventDtos);
         return dto;
     }
