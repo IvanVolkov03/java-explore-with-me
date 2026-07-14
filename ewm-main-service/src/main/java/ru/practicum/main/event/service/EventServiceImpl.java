@@ -383,7 +383,7 @@ public class EventServiceImpl implements EventService {
                     start,
                     end,
                     List.of("/events/" + eventId),
-                    false
+                    true
             ).getBody();
             return stats != null && !stats.isEmpty() ? stats.get(0).getHits() : 0L;
         } catch (Exception e) {
