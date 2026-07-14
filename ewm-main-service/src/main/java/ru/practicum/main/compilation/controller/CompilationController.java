@@ -9,26 +9,40 @@ import ru.practicum.main.compilation.dto.NewCompilationDto;
 import ru.practicum.main.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.main.compilation.service.CompilationService;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/admin/compilations")
+@RequestMapping
 @RequiredArgsConstructor
-public class AdminCompilationController {
+public class CompilationController {
 
     private final CompilationService compilationService;
 
-    @PostMapping
+    @GetMapping("/compilations")
+    public List<CompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned,
+                                                @RequestParam(defaultValue = "0") Integer from,
+                                                @RequestParam(defaultValue = "10") Integer size) {
+        return compilationService.getCompilations(pinned, from, size);
+    }
+
+    @GetMapping("/compilations/{compId}")
+    public CompilationDto getCompilation(@PathVariable Long compId) {
+        return compilationService.getCompilation(compId);
+    }
+
+    @PostMapping("/admin/compilations")
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto addCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
         return compilationService.addCompilation(newCompilationDto);
     }
 
-    @DeleteMapping("/{compId}")
+    @DeleteMapping("/admin/compilations/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
         compilationService.deleteCompilation(compId);
     }
 
-    @PatchMapping("/{compId}")
+    @PatchMapping("/admin/compilations/{compId}")
     public CompilationDto updateCompilation(@PathVariable Long compId,
                                             @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
         return compilationService.updateCompilation(compId, updateCompilationRequest);
