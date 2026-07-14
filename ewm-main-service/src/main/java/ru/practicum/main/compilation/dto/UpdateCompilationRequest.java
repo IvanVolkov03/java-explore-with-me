@@ -4,12 +4,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
 public class UpdateCompilationRequest {
-    private Set<Long> events;
+    private List<Long> events;
     private Boolean pinned;
 
     @Size(max = 50)

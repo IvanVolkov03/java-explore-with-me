@@ -30,7 +30,8 @@ public class StatsClientImpl implements StatsClient {
     public ResponseEntity<List<ViewStats>> getStats(String start, String end, List<String> uris, Boolean unique) {
         return webClient.get()
                 .uri(uriBuilder -> {
-                    uriBuilder.queryParam("start", start)
+                    uriBuilder.path("/stats")
+                            .queryParam("start", start)
                             .queryParam("end", end)
                             .queryParam("unique", unique);
                     if (uris != null && !uris.isEmpty()) {

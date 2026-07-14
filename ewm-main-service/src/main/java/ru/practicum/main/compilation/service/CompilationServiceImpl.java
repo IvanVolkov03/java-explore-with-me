@@ -32,14 +32,15 @@ public class CompilationServiceImpl implements CompilationService {
         compilation.setPinned(newCompilationDto.getPinned() != null ? newCompilationDto.getPinned() : false);
         compilation.setTitle(newCompilationDto.getTitle());
 
-        Set<Event> events = new HashSet<>();
-        if (newCompilationDto.getEvents() != null) {
-            events = eventRepository.findAllById(newCompilationDto.getEvents())
+        if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
+            Set<Event> publishedEvents = eventRepository.findAllById(newCompilationDto.getEvents())
                     .stream()
                     .filter(e -> "PUBLISHED".equals(e.getState()))
                     .collect(Collectors.toSet());
+            compilation.setEvents(publishedEvents);
+        } else {
+            compilation.setEvents(new HashSet<>());
         }
-        compilation.setEvents(events);
 
         return toDto(compilationRepository.save(compilation));
     }
@@ -62,11 +63,11 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
         if (updateCompilationRequest.getEvents() != null) {
-            Set<Event> events = eventRepository.findAllById(updateCompilationRequest.getEvents())
+            Set<Event> publishedEvents = eventRepository.findAllById(updateCompilationRequest.getEvents())
                     .stream()
                     .filter(e -> "PUBLISHED".equals(e.getState()))
                     .collect(Collectors.toSet());
-            compilation.setEvents(events);
+            compilation.setEvents(publishedEvents);
         }
 
         return toDto(compilationRepository.save(compilation));
