@@ -30,21 +30,21 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         Compilation compilation = new Compilation();
 
-        // Если pinned null, ставим false
-        Boolean pinnedValue = newCompilationDto.getPinned();
-        compilation.setPinned(pinnedValue != null ? pinnedValue : false);
-
+        Boolean pinnedValue = false;
+        if (newCompilationDto.getPinned() != null) {
+            pinnedValue = Boolean.parseBoolean(newCompilationDto.getPinned().toString());
+        }
+        compilation.setPinned(pinnedValue);
         compilation.setTitle(newCompilationDto.getTitle());
 
-        // Если events null или пустой - создаем пустое множество
-        Set<Event> events = new HashSet<>();
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
-            events = eventRepository.findAllById(newCompilationDto.getEvents())
+            Set<Event> events = eventRepository.findAllById(newCompilationDto.getEvents())
                     .stream()
-                    .filter(e -> "PUBLISHED".equals(e.getState()))
                     .collect(Collectors.toSet());
+            compilation.setEvents(events);
+        } else {
+            compilation.setEvents(new HashSet<>());
         }
-        compilation.setEvents(events);
 
         return toDto(compilationRepository.save(compilation));
     }
@@ -61,7 +61,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .orElseThrow(() -> new RuntimeException("Compilation not found"));
 
         if (updateCompilationRequest.getPinned() != null) {
-            compilation.setPinned(updateCompilationRequest.getPinned());
+            compilation.setPinned(Boolean.parseBoolean(updateCompilationRequest.getPinned().toString()));
         }
         if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());
@@ -70,7 +70,6 @@ public class CompilationServiceImpl implements CompilationService {
             if (!updateCompilationRequest.getEvents().isEmpty()) {
                 Set<Event> events = eventRepository.findAllById(updateCompilationRequest.getEvents())
                         .stream()
-                        .filter(e -> "PUBLISHED".equals(e.getState()))
                         .collect(Collectors.toSet());
                 compilation.setEvents(events);
             } else {

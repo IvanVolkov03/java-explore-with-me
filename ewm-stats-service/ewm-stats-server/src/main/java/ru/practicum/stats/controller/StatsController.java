@@ -29,11 +29,20 @@ public class StatsController {
 
     @GetMapping("/stats")
     public List<ViewStats> getStats(
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") Boolean unique
     ) {
+        if (start == null) {
+            throw new IllegalArgumentException("Field: start. Error: start must not be null");
+        }
+        if (end == null) {
+            throw new IllegalArgumentException("Field: end. Error: end must not be null");
+        }
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Field: start. Error: начало периода не может быть позже конца. Value: " + start);
+        }
         return statsService.getStats(start, end, uris, unique);
     }
 }

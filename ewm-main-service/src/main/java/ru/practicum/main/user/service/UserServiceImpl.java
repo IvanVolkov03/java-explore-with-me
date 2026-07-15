@@ -2,6 +2,7 @@ package ru.practicum.main.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.main.exception.ConflictException;
 import ru.practicum.main.exception.NotFoundException;
@@ -47,7 +48,8 @@ public class UserServiceImpl implements UserService {
                     .map(this::toDto)
                     .collect(Collectors.toList());
         }
-        return userRepository.findAll(PageRequest.of(from / size, size))
+
+        return userRepository.findAll(PageRequest.of(from / size, size, Sort.by(Sort.Direction.ASC, "id")))
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

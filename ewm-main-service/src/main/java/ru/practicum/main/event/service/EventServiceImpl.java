@@ -2,7 +2,6 @@ package ru.practicum.main.event.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -230,11 +229,7 @@ public class EventServiceImpl implements EventService {
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                Integer from, Integer size) {
-        LocalDateTime finalRangeStart = rangeStart;
-        LocalDateTime finalRangeEnd = rangeEnd;
-
-        Page<Event> eventPage = eventRepository.findAll(PageRequest.of(from / size, size));
-        List<Event> events = eventPage.getContent();
+        List<Event> events = eventRepository.findAll();
 
         if (users != null && !users.isEmpty()) {
             events = events.stream()
@@ -254,22 +249,31 @@ public class EventServiceImpl implements EventService {
                     .collect(Collectors.toList());
         }
 
-        if (finalRangeStart != null) {
+        if (rangeStart != null) {
             events = events.stream()
-                    .filter(e -> !e.getEventDate().isBefore(finalRangeStart))
+                    .filter(e -> !e.getEventDate().isBefore(rangeStart))
                     .collect(Collectors.toList());
         }
 
-        if (finalRangeEnd != null) {
+        if (rangeEnd != null) {
             events = events.stream()
-                    .filter(e -> !e.getEventDate().isAfter(finalRangeEnd))
+                    .filter(e -> !e.getEventDate().isAfter(rangeEnd))
                     .collect(Collectors.toList());
         }
 
-        List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
+        int start = from != null ? from : 0;
+        int end = Math.min(start + (size != null ? size : 10), events.size());
+
+        if (start > events.size()) {
+            return List.of();
+        }
+
+        List<Event> pagedEvents = events.subList(start, end);
+
+        List<Long> eventIds = pagedEvents.stream().map(Event::getId).collect(Collectors.toList());
         Map<Long, Long> viewsMap = getViewsMap(eventIds);
 
-        return events.stream()
+        return pagedEvents.stream()
                 .map(e -> toFullDto(e, viewsMap.getOrDefault(e.getId(), 0L),
                         eventRepository.countConfirmedRequests(e.getId())))
                 .collect(Collectors.toList());
