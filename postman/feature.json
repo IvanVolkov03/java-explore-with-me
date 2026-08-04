@@ -997,7 +997,7 @@
           }
         },
         {
-          "name": "Admin - Update Comment Status to PENDING",
+          "name": "Admin - Update Comment Status to REJECTED",
           "event": [
             {
               "listen": "test",
@@ -1005,8 +1005,8 @@
                 "exec": [
                   "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
                   "const response = pm.response.json();",
-                  "pm.test(\"Status changed to PENDING\", () => {",
-                  "  pm.expect(response.status).to.equal('PENDING');",
+                  "pm.test(\"Status changed to REJECTED\", () => {",
+                  "  pm.expect(response.status).to.equal('REJECTED');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1018,7 +1018,7 @@
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\"status\": \"PENDING\"}"
+              "raw": "{\"status\": \"REJECTED\"}"
             },
             "url": {
               "raw": "{{baseurl}}/admin/comments/{{commentId}}",
