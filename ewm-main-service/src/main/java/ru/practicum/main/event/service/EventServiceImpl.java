@@ -10,6 +10,7 @@ import ru.practicum.dto.EndpointHit;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.main.category.model.Category;
 import ru.practicum.main.category.repository.CategoryRepository;
+import ru.practicum.main.comment.service.CommentService;
 import ru.practicum.main.event.dto.*;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.event.repository.EventRepository;
@@ -32,6 +33,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final StatsClient statsClient;
+    private final CommentService commentService;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -458,6 +460,8 @@ public class EventServiceImpl implements EventService {
         dto.setState(event.getState());
         dto.setTitle(event.getTitle());
         dto.setViews(views);
+        dto.setCommentsCount(commentService.getCommentsCountByEvent(event.getId()));
+
         return dto;
     }
 

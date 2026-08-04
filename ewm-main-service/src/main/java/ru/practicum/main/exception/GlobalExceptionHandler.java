@@ -42,6 +42,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiError handleForbiddenException(final ForbiddenException e) {
+        return new ApiError(
+                List.of(e.getMessage()),
+                e.getMessage(),
+                "Forbidden: User does not have permission to perform this action.",
+                HttpStatus.FORBIDDEN.name(),
+                LocalDateTime.now()
+        );
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleIllegalArgumentException(final IllegalArgumentException e) {

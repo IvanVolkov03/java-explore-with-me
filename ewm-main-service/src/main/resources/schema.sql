@@ -55,3 +55,14 @@ CREATE TABLE IF NOT EXISTS requests (
     CONSTRAINT fk_requests_user FOREIGN KEY (requester_id) REFERENCES users(id),
     UNIQUE (event_id, requester_id)
 );
+
+CREATE TABLE comments (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    text VARCHAR(1000) NOT NULL,
+    event_id BIGINT NOT NULL,
+    author_id BIGINT NOT NULL,
+    created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'PUBLISHED',
+    CONSTRAINT fk_comments_event FOREIGN KEY (event_id) REFERENCES events(id),
+    CONSTRAINT fk_comments_user FOREIGN KEY (author_id) REFERENCES users(id)
+);
